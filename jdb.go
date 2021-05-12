@@ -9,18 +9,17 @@ import (
 
 type Jdb struct {
 	Name string
-	Output []byte
+	Map map[string]string
 }
 
 type Json struct {
-	Output []Data `json:"output"`
+	Output []Data  `json:"output"`
 }
 
 type Data struct {
 	Key string `json:"key"`
 	Value string `json:"value"`
 }
-
 
 type Map map[string]string
 
@@ -31,7 +30,6 @@ func Open(f string) (*Jdb) {
 		file, _ := os.Create(f)
 		w := gzip.NewWriter(file)
 		w.Write([]byte(`{"output":[]}`))
-		w.Close()
 		zipReader, _ = os.Open(f)
 	}
 
@@ -42,33 +40,27 @@ func Open(f string) (*Jdb) {
 		panic(err)
 	}
 
-	content, err := ioutil.ReadAll(reader)
-
-	return &Jdb{Name: f, Output: content}
-}
-
-func (jdb *Jdb) Read() (Map) {
-	d := make(map[string]string)
 	var j Json
 
-	_ = json.Unmarshal(jdb.Output, &j)
+	d := &Jdb{Name: f, Map: make(map[string]string)}
+
+	content, _ := ioutil.ReadAll(reader)
+
+	_ = json.Unmarshal(content, &j)
 
 	for _, v := range j.Output {
-		d[v.Key] = v.Value
+		d.Map[v.Key] = v.Value
 	}
 
 	return d
 }
 
-func (jdb *Jdb) Write(key, value string) error {
+func (jdb *Jdb) Close() error {
 	var j Json
-	err := json.Unmarshal(jdb.Output, &j)
 
-	if err != nil {
-		return err
+	for k, v := range jdb.Map {
+		j.Output = append(j.Output, Data{Key: k, Value: v})
 	}
-
-	j.Output = append(j.Output, Data{Key: key, Value: value})
 
 	out, err := json.Marshal(j)
 
@@ -76,16 +68,23 @@ func (jdb *Jdb) Write(key, value string) error {
 		return err
 	}
 
-	f, err := os.Create(jdb.Name)
+	err = os.Remove(jdb.Name)
 
 	if err != nil {
 		return err
 	}
 
-	w := gzip.NewWriter(f)
+	file, err := os.Create(jdb.Name)
+
+	defer file.Close()
+
+	if err != nil {
+		return err
+	}
+
+	w := gzip.NewWriter(file)
 	w.Write(out)
 	w.Close()
 
 	return nil
 }
-
