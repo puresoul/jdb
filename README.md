@@ -1,2 +1,3 @@
 # jdb
-Compressed json flatfile database with simple key/value api
+
+Compressed json flatfile "database" (it's golang map datatype actualy) with simple key/value api

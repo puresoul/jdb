@@ -5,20 +5,30 @@ import (
 	"github.com/puresoul/jdb"
 )
 
+var (
+	j *jdb.Jdb
+)
+
 func TestOpen(t *testing.T) {
-	jdb := jdb.Open("test.db")
+	j = jdb.Open("test.db")
+}
 
-	jdb.Map["test1"] = "test2"
+func TestWrite(t *testing.T) {
+	j.Map["test"] = "test"
 
-	jdb.Close()
+	j.Close()
+}
+
+func TestRead(t *testing.T) {
+	j = jdb.Open("test.db")
+
+	tst := j.ReadStr("test")
+
+	if j.Map["test"] != tst {
+		t.Error("This should never happen!")
+	}
 }
 
 func TestClose(t *testing.T) {
-	jdb := jdb.Open("test.db")
-
-	if jdb.Map["test1"] != "test2" {
-		t.Error("LoadConfig should have failed")
-	}
-
-	jdb.Close()
+	j.Close()
 }

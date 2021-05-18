@@ -9,7 +9,7 @@ import (
 
 type Jdb struct {
 	Name string
-	Map map[string]string
+	Map Db
 }
 
 type Json struct {
@@ -18,10 +18,10 @@ type Json struct {
 
 type Data struct {
 	Key string `json:"key"`
-	Value string `json:"value"`
+	Value interface{} `json:"value"`
 }
 
-type Map map[string]string
+type Db map[string]interface{}
 
 func Open(f string) (*Jdb) {
 	zipReader, err := os.Open(f)
@@ -42,7 +42,7 @@ func Open(f string) (*Jdb) {
 
 	var j Json
 
-	d := &Jdb{Name: f, Map: make(map[string]string)}
+	d := &Jdb{Name: f, Map: make(map[string]interface{})}
 
 	content, _ := ioutil.ReadAll(reader)
 
@@ -53,6 +53,26 @@ func Open(f string) (*Jdb) {
 	}
 
 	return d
+}
+
+func (jdb *Jdb) ReadStr(key string) string {
+	return jdb.Map[key].(string)
+}
+
+func (jdb *Jdb) ReadFloat(key string) float64 {
+	switch jdb.Map[key].(type) {
+	case int:
+		return float64(jdb.Map[key].(int))
+	}
+	return jdb.Map[key].(float64)
+}
+
+func (jdb *Jdb) ReadInt(key string) int {
+	switch jdb.Map[key].(type) {
+	case float64:
+		return int(jdb.Map[key].(float64))
+	}
+	return jdb.Map[key].(int)
 }
 
 func (jdb *Jdb) Close() error {
