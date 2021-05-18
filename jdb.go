@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"compress/gzip"
 	"os"
+	"fmt"
 )
 
 type Jdb struct {
@@ -56,6 +57,12 @@ func Open(f string) (*Jdb) {
 }
 
 func (jdb *Jdb) ReadStr(key string) string {
+	switch jdb.Map[key].(type) {
+	case int:
+		return fmt.Sprint(jdb.Map[key].(int))
+	case float64:
+		return fmt.Sprint(jdb.Map[key].(float64))
+	}
 	return jdb.Map[key].(string)
 }
 
