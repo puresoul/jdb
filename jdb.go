@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"os"
 	"fmt"
+	"errors"
 )
 
 type Jdb struct {
@@ -27,11 +28,16 @@ type Db map[string]interface{}
 func Open(f string) (*Jdb) {
 	zipReader, err := os.Open(f)
 
-	if(err != nil){
-		file, _ := os.Create(f)
-		w := gzip.NewWriter(file)
-		w.Write([]byte(`{"output":[]}`))
-		zipReader, _ = os.Open(f)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			file, _ := os.Create(f)
+			w := gzip.NewWriter(file)
+			w.Write([]byte(`{"output":[]}`))
+			zipReader, _ = os.Open(f)
+		} else {
+			fmt.Println("Database file is in use!")
+			return &Jdb{}
+		}
 	}
 
 	defer zipReader.Close()
@@ -77,7 +83,7 @@ func (jdb *Jdb) ReadFloat(key string) float64 {
 func (jdb *Jdb) ReadInt(key string) int {
 	switch jdb.Map[key].(type) {
 	case float64:
-		return int(jdb.Map[key].(float64))
+		return int(jdb.Map[key].(float64)) 
 	}
 	return jdb.Map[key].(int)
 }
@@ -95,13 +101,7 @@ func (jdb *Jdb) Close() error {
 		return err
 	}
 
-	err = os.Remove(jdb.Name)
-
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(jdb.Name)
+	file, err := os.Create(jdb.Name+".bak")
 
 	defer file.Close()
 
@@ -112,6 +112,12 @@ func (jdb *Jdb) Close() error {
 	w := gzip.NewWriter(file)
 	w.Write(out)
 	w.Close()
+
+	err = os.Rename(jdb.Name+".bak", jdb.Name)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

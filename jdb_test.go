@@ -19,7 +19,7 @@ func TestWrite(t *testing.T) {
 	j.Close()
 }
 
-func TestRead(t *testing.T) {
+func TestReadStr(t *testing.T) {
 	j = jdb.Open("test.db")
 
 	tst := j.ReadStr("test")
@@ -30,5 +30,23 @@ func TestRead(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
+	j.Map["int"] = 123
 	j.Close()
+}
+
+func TestReadInt(t *testing.T) {
+	j = jdb.Open("test.db")
+
+	tst := j.ReadInt("int")
+
+	if tst+tst != 123+123 {
+		t.Error("This should never happen!")
+	}
+
+	s := j.ReadStr("int")
+
+	if s != "123" {
+		t.Error("This should never happen!")
+	}
+
 }
