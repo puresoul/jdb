@@ -63,29 +63,38 @@ func Open(f string) (*Jdb) {
 }
 
 func (jdb *Jdb) ReadStr(key string) string {
-	switch jdb.Map[key].(type) {
-	case int:
-		return fmt.Sprint(jdb.Map[key].(int))
-	case float64:
-		return fmt.Sprint(jdb.Map[key].(float64))
+	if val, ok := jdb.Map[key]; ok {
+		switch val.(type) {
+			case int:
+				return fmt.Sprint(val.(int))
+			case float64:
+				return fmt.Sprint(val.(float64))
+		}
+		return val.(string)
 	}
-	return jdb.Map[key].(string)
+	return ""
 }
 
 func (jdb *Jdb) ReadFloat(key string) float64 {
-	switch jdb.Map[key].(type) {
-	case int:
-		return float64(jdb.Map[key].(int))
+	if val, ok := jdb.Map[key]; ok {
+		switch val.(type) {
+			case int:
+				return float64(val.(int))
+		}
+		return val.(float64)
 	}
-	return jdb.Map[key].(float64)
+	return 0.0
 }
 
 func (jdb *Jdb) ReadInt(key string) int {
-	switch jdb.Map[key].(type) {
-	case float64:
-		return int(jdb.Map[key].(float64)) 
+	if val, ok := jdb.Map[key]; ok {
+		switch val.(type) {
+		case float64:
+			return int(val.(float64)) 
+		}
+		return val.(int)
 	}
-	return jdb.Map[key].(int)
+	return 0
 }
 
 func (jdb *Jdb) Close() error {
