@@ -25,8 +25,8 @@ func main() {
 	d = jdb.Open("test.db")
 
 	// Read String
-	t := j.ReadStr("test")
-	fmt.Println(tst)
+	t := d.ReadStr("test")
+	fmt.Println(t)
 
 	// Write Int
 	d.Map["tst"] = 123
@@ -35,7 +35,7 @@ func main() {
 	d = jdb.Open("test.db")
 
 	// Read Int
-	i := j.ReadInt("tst")
+	i := d.ReadInt("tst")
 	fmt.Println(i+i)
 }
 ``
